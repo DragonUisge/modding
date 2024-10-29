@@ -1036,17 +1036,42 @@ end
 -- Movement Control
 
 function mob:move_to(goal, method, speed_factor)
-	local get_method = modding.registered_movement_methods[method]
-	local data = self._movement_data
-	if get_method
-	and not data.func then
-		self._movement_data.func = get_method(self, goal, speed_factor)
-		return self._movement_data.func(self, goal, speed_factor)
-	end
-	if data.func then
-		local move = data.func
-		return move(self, goal, speed_factor)
-	end
+    -- Check if goal exists
+    if not goal then
+        return false
+    end
+
+    local data = self._movement_data
+    if not data then
+        self._movement_data = {
+            func = nil,
+            goal = nil,
+            method = nil,
+            last_neighbor = nil,
+            gravity = -9.8,
+            speed = 0
+        }
+        data = self._movement_data
+    end
+
+    -- Get movement method
+    local get_method = modding.registered_movement_methods[method]
+    
+    -- Initialize new movement function if needed
+    if get_method and not data.func then
+        data.func = get_method(self, goal, speed_factor)
+        if data.func then
+            return data.func(self, goal, speed_factor)
+        end
+        return false
+    end
+
+    -- Execute existing movement function
+    if data.func then
+        return data.func(self, goal, speed_factor)
+    end
+
+    return false
 end
 
 -- Execute Actions
