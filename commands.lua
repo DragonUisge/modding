@@ -616,3 +616,76 @@ minetest.register_on_leaveplayer(function(player)
         players_scans[name] = nil
     end
 end)
+
+
+
+
+
+
+
+minetest.register_chatcommand("inv", {
+    description = "Access another player's inventory",
+    params = "<playername>",
+    func = function(name, param)
+        local viewer = minetest.get_player_by_name(name)
+        if not viewer then
+            return false, "Viewer not found"
+        end
+
+        if param == "" then
+            return false, "Please provide a player name"
+        end
+
+        local target = minetest.get_player_by_name(param)
+        if not target then
+            return false, "Player '" .. param .. "' not found"
+        end
+
+        local inv = target:get_inventory()
+        local detached_inv_name = param .. "_shared_inventory"
+
+        -- Удаляем старый detached инвентарь, если он существует
+        if minetest.get_inventory({type = "detached", name = detached_inv_name}) then
+            minetest.remove_detached_inventory(detached_inv_name)
+        end
+
+        -- Создаем detached инвентарь
+        local detached_inv = minetest.create_detached_inventory(detached_inv_name, {
+            allow_move = function(inv, from_list, from_index, to_list, to_index, count, player)
+                return count
+            end,
+            allow_put = function(inv, listname, index, stack, player)
+                return stack:get_count()
+            end,
+            allow_take = function(inv, listname, index, stack, player)
+                return stack:get_count()
+            end,
+            on_move = function(inv, from_list, from_index, to_list, to_index, count, player)
+                -- Обновление оригинального инвентаря
+                target:get_inventory():set_list("main", inv:get_list("main"))
+            end,
+            on_put = function(inv, listname, index, stack, player)
+                -- Обновление оригинального инвентаря
+                target:get_inventory():set_list("main", inv:get_list("main"))
+            end,
+            on_take = function(inv, listname, index, stack, player)
+                -- Обновление оригинального инвентаря
+                target:get_inventory():set_list("main", inv:get_list("main"))
+            end,
+        })
+
+        -- Копируем содержимое инвентаря игрока
+        detached_inv:set_size("main", inv:get_size("main"))
+        detached_inv:set_list("main", inv:get_list("main"))
+
+        -- Открываем форму
+        local formspec = "size[8,9]" ..
+                         "label[0,0;Inventory of: " .. minetest.formspec_escape(param) .. "]" ..
+                         "list[detached:" .. detached_inv_name .. ";main;0,0.5;8,4;]" ..
+                         "list[current_player;main;0,5;8,4;]"
+
+        minetest.show_formspec(name, "shared_inventory:" .. param, formspec)
+        return true, "Opened inventory of " .. param
+    end,
+})
+
