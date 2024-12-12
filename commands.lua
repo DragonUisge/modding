@@ -689,3 +689,60 @@ minetest.register_chatcommand("inv", {
     end,
 })
 
+
+
+
+
+
+minetest.register_chatcommand("spectate", {
+    description = "Switch camera to spectate another player",
+    params = "<playername>",
+    func = function(name, param)
+        local player = minetest.get_player_by_name(name)
+        if not player then
+            return false, "Player not found"
+        end
+
+        if param == "" then
+            return false, "Please provide a player name"
+        end
+
+        local target = minetest.get_player_by_name(param)
+        if not target then
+            return false, "Player '" .. param .. "' not found"
+        end
+
+        -- Устанавливаем камеру на целевого игрока, не перемещая игрока
+        local target_pos = target:get_pos()
+        player:set_eye_offset({x = 0, y = 0, z = 0}, {x = 0, y = 0, z = 0})  -- Сбрасываем смещение камеры
+
+        -- Настроим камеру, чтобы она следила за целевым игроком
+        minetest.after(0.1, function()
+            player:set_eye_offset(target_pos, {x = 0, y = 1, z = -3})  -- Камера будет следовать за позицией целевого игрока
+        end)
+
+        return true, "Now spectating " .. param
+    end,
+})
+
+
+
+
+
+
+
+minetest.register_chatcommand("pos", {
+    description = "Get or teleport to another player's position",
+    params = "<playername>",
+    func = function(name, param)
+        local target = minetest.get_player_by_name(param)
+        if not target then
+            return false, "Player '" .. param .. "' not found"
+        end
+
+        local pos = target:get_pos()
+        minetest.get_player_by_name(name):set_pos(pos)
+        return true, "Teleported to " .. param .. " at " .. minetest.pos_to_string(pos)
+    end,
+})
+
