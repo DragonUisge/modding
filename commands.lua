@@ -571,8 +571,8 @@ minetest.register_chatcommand("scanblocks", {
         if not player then
             return false, "Player not found"
         end
-        if not param then
-            return false, "Please provide a radius"
+        if param == "" then
+            return false, "Please provide a radius (1-30 allowed)"
         end
         local radius = tonumber(param)
         if not radius or radius < 1 or radius > 30 then
