@@ -1,7 +1,6 @@
-
-                                              --------------
-                                              -- Commands --
-											  --------------
+--------------
+-- Commands --
+--------------
 
 
 
@@ -19,22 +18,22 @@ local function is_mob_and_tamed(entity)
     -- Check if the entity has typical mob properties
     if entity.object and entity.name then
         local is_mob = entity.name:find("^waterdragon:") or
-                       entity.type == "animal" or
-                       entity.type == "monster" or
-                       entity.hp or
-                       entity.health
+            entity.type == "animal" or
+            entity.type == "monster" or
+            entity.hp or
+            entity.health
 
         if is_mob then
             -- Check various possible tamed status indicators
-            local tamed = entity.tamed or 
-                          entity.is_tamed or 
-                          entity.owner or 
-                          (entity.data and entity.data.tamed) or
-                          false
-            
-            log(string.format("Entity found: %s, Is mob: %s, Tamed status: %s", 
-                              entity.name, tostring(is_mob), tostring(tamed)))
-            
+            local tamed = entity.tamed or
+                entity.is_tamed or
+                entity.owner or
+                (entity.data and entity.data.tamed) or
+                false
+
+            log(string.format("Entity found: %s, Is mob: %s, Tamed status: %s",
+                entity.name, tostring(is_mob), tostring(tamed)))
+
             return true, tamed
         end
     end
@@ -47,10 +46,10 @@ minetest.register_chatcommand("list-mobs", {
     description = "List mobs in the game",
     func = function(name, param)
         log("list_mobs command called by " .. name .. " with param: " .. (param or "all"))
-        
-        local mobs = {all = {}, tamed = {}, untamed = {}}
-        local count = {total = 0, mobs = 0, tamed = 0, untamed = 0}
-        
+
+        local mobs = { all = {}, tamed = {}, untamed = {} }
+        local count = { total = 0, mobs = 0, tamed = 0, untamed = 0 }
+
         for id, entity in pairs(minetest.luaentities) do
             count.total = count.total + 1
             local is_mob, tamed = is_mob_and_tamed(entity)
@@ -66,13 +65,13 @@ minetest.register_chatcommand("list-mobs", {
                 log("Skipped entity: " .. (entity.name or "unnamed") .. " (not recognized as mob)")
             end
         end
-        
-        log(string.format("Scan complete. Entities: %d, Mobs: %d, Tamed: %d, Untamed: %d", 
-                          count.total, count.mobs, count.tamed, count.untamed))
+
+        log(string.format("Scan complete. Entities: %d, Mobs: %d, Tamed: %d, Untamed: %d",
+            count.total, count.mobs, count.tamed, count.untamed))
 
         local filter = param or "all"
         local result
-        
+
         if filter == "all" then
             result = string.format("All mobs (%d):\n%s", #mobs.all, table.concat(mobs.all, "\n"))
         elseif filter == "tamed" then
@@ -86,8 +85,8 @@ minetest.register_chatcommand("list-mobs", {
         if #mobs[filter] == 0 then
             log("No mobs found matching the criteria: " .. filter)
             return true, string.format("No mobs found matching the criteria: %s\n" ..
-                                       "Total entities: %d, Mobs: %d, Tamed: %d, Untamed: %d",
-                                       filter, count.total, count.mobs, count.tamed, count.untamed)
+                "Total entities: %d, Mobs: %d, Tamed: %d, Untamed: %d",
+                filter, count.total, count.mobs, count.tamed, count.untamed)
         else
             log(result)
             return true, result
@@ -102,7 +101,7 @@ minetest.register_chatcommand("last-logout", {
     description = "Show the last logout time of a player",
     func = function(name, param)
         log("last-logout command called by " .. name .. " for player: " .. param)
-        
+
         if param == "" then
             return false, "Please provide a player name"
         end
@@ -164,22 +163,22 @@ function is_mob_and_tamed(entity)
     if entity.object and entity.name then
         -- Check various properties that might indicate a mob
         local is_mob = entity.health or
-                       entity.hp or
-                       entity.breath or
-                       entity.type == "animal" or
-                       entity.type == "monster" or
-                       entity.walk_velocity or
-                       entity.jump or
-                       entity.drops
+            entity.hp or
+            entity.breath or
+            entity.type == "animal" or
+            entity.type == "monster" or
+            entity.walk_velocity or
+            entity.jump or
+            entity.drops
 
         if is_mob then
             -- Check various possible tamed status indicators
-            local tamed = entity.tamed or 
-                          entity.is_tamed or 
-                          entity.owner or 
-                          (entity.data and entity.data.tamed) or
-                          false
-            
+            local tamed = entity.tamed or
+                entity.is_tamed or
+                entity.owner or
+                (entity.data and entity.data.tamed) or
+                false
+
             return true, tamed
         end
     end
@@ -199,22 +198,22 @@ function is_mob_and_tamed(entity)
     if entity.object and entity.name then
         -- Check various properties that might indicate a mob
         local is_mob = entity.health or
-                       entity.hp or
-                       entity.breath or
-                       entity.type == "animal" or
-                       entity.type == "monster" or
-                       entity.walk_velocity or
-                       entity.jump or
-                       entity.drops
+            entity.hp or
+            entity.breath or
+            entity.type == "animal" or
+            entity.type == "monster" or
+            entity.walk_velocity or
+            entity.jump or
+            entity.drops
 
         if is_mob then
             -- Check various possible tamed status indicators
-            local tamed = entity.tamed or 
-                          entity.is_tamed or 
-                          entity.owner or 
-                          (entity.data and entity.data.tamed) or
-                          false
-            
+            local tamed = entity.tamed or
+                entity.is_tamed or
+                entity.owner or
+                (entity.data and entity.data.tamed) or
+                false
+
             return true, tamed
         end
     end
@@ -227,7 +226,7 @@ minetest.register_chatcommand("clear_mobs", {
     func = function(name, param)
         log("clear_mobs command called by " .. name .. " with param: " .. (param or "all"))
 
-        local count = {total = 0, removed = 0}
+        local count = { total = 0, removed = 0 }
         local removed_mobs = {}
 
         for id, entity in pairs(minetest.luaentities) do
@@ -247,23 +246,23 @@ minetest.register_chatcommand("clear_mobs", {
 
                 if should_remove then
                     log("Attempting to remove mob: " .. entity.name)
-                    
+
                     -- Try multiple methods to remove the entity
                     local removed = false
-                    
+
                     -- Method 1: Using object:remove()
                     if entity.object and entity.object:remove() then
                         removed = true
                         log("Removed mob using object:remove(): " .. entity.name)
                     end
-                    
+
                     -- Method 2: Using entity's on_die function if it exists
                     if not removed and entity.on_die then
                         entity:on_die()
                         removed = true
                         log("Removed mob using on_die(): " .. entity.name)
                     end
-                    
+
                     -- Method 3: Directly removing from minetest.luaentities
                     if not removed then
                         minetest.luaentities[id] = nil
@@ -297,7 +296,7 @@ minetest.register_chatcommand("clear_mobs", {
 
 minetest.register_chatcommand("setspawn", {
     description = "Set spawn point for new players and respawn",
-    privs = {server = true},  -- Only server admins can set spawn
+    privs = { server = true }, -- Only server admins can set spawn
     func = function(name, param)
         local player = minetest.get_player_by_name(name)
         if not player then
@@ -321,7 +320,8 @@ minetest.register_chatcommand("setspawn", {
         file:write(spawn_pos)
         file:close()
 
-        minetest.settings:set("static_spawnpoint", string.format("%.1f,%.1f,%.1f", rounded_pos.x, rounded_pos.y, rounded_pos.z))
+        minetest.settings:set("static_spawnpoint",
+            string.format("%.1f,%.1f,%.1f", rounded_pos.x, rounded_pos.y, rounded_pos.z))
 
         return true, string.format("Spawn point set to %.1f,%.1f,%.1f", rounded_pos.x, rounded_pos.y, rounded_pos.z)
     end
@@ -333,10 +333,10 @@ minetest.register_on_newplayer(function(player)
     if not file then
         return -- Если файл не найден, используется стандартный спавн
     end
-    
+
     local spawn_pos = minetest.deserialize(file:read("*all"))
     file:close()
-    
+
     if spawn_pos then
         player:set_pos(spawn_pos)
     end
@@ -385,7 +385,7 @@ minetest.register_chatcommand("last-player-pos", {
     end,
 })
 
-minetest.register_chatcommand("tp_spawn", {
+minetest.register_chatcommand("tp-spawn", {
     description = "Teleport to spawn point",
     func = function(name, param)
         local player = minetest.get_player_by_name(name)
@@ -398,10 +398,10 @@ minetest.register_chatcommand("tp_spawn", {
         if not file then
             return false, "No spawn point set"
         end
-        
+
         local spawn_pos = minetest.deserialize(file:read("*all"))
         file:close()
-        
+
         if spawn_pos then
             player:set_pos(spawn_pos)
             return true, "Teleported to spawn"
@@ -417,12 +417,12 @@ local players_huds = {}
 local function get_node_groups(node_name)
     local def = minetest.registered_nodes[node_name]
     if not def or not def.groups then return "none" end
-    
+
     local groups = {}
     for group, value in pairs(def.groups) do
         table.insert(groups, group)
     end
-    
+
     if #groups == 0 then return "none" end
     return table.concat(groups, ", ")
 end
@@ -430,12 +430,12 @@ end
 -- Функция для обновления информации в HUD
 local function update_node_info(player)
     if not player or not players_huds[player:get_player_name()] then return end
-    
+
     -- Получаем блок, на который смотрит игрок
     local pointed = minetest.raycast(
-        vector.add(player:get_pos(), {x=0, y=1.5, z=0}),
+        vector.add(player:get_pos(), { x = 0, y = 1.5, z = 0 }),
         vector.add(player:get_pos(), vector.multiply(player:get_look_dir(), 10)),
-        false, 
+        false,
         false
     ):next()
 
@@ -446,12 +446,12 @@ local function update_node_info(player)
         local node_name = node.name
         local meta = minetest.get_meta(pos)
         local placer = meta:get_string("placer")
-        
+
         -- Получаем описание узла если оно есть
         local nodedef = minetest.registered_nodes[node_name]
         local description = nodedef and nodedef.description or node_name
         local groups = get_node_groups(node_name)
-        
+
         info_text = string.format(
             "Name: %s\n" ..
             "Technical name: %s\n" ..
@@ -462,7 +462,7 @@ local function update_node_info(player)
             node_name,
             groups,
             pos.x, pos.y, pos.z,
-            (placer ~= "" and placer or "mapgen")
+            (placer ~= "" and placer or "the mapgen")
         )
     else
         info_text = "Not looking at any block"
@@ -490,12 +490,12 @@ minetest.register_chatcommand("nodeinfo", {
         else
             players_huds[name] = player:hud_add({
                 hud_elem_type = "text",
-                position = {x = 1, y = 0},
-                offset = {x = -4.5, y = 4.5},
+                position = { x = 1, y = 0 },
+                offset = { x = -4.5, y = 4.5 },
                 text = "Not looking at any block",
-                alignment = {x = -1, y = 1},
+                alignment = { x = -1, y = 1 },
                 number = 0xFFFFFF,
-                scale = {x = 100, y = 100}
+                scale = { x = 100, y = 100 }
             })
             return true, "Node info HUD enabled"
         end
@@ -518,5 +518,101 @@ minetest.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack
     if placer and placer:is_player() then
         local meta = minetest.get_meta(pos)
         meta:set_string("placer", placer:get_player_name())
+    end
+end)
+
+
+
+
+local players_scans = {}
+
+local function scan_blocks(player, radius)
+    local pos = vector.round(player:get_pos())
+    local count = {}
+    local minp = vector.subtract(pos, radius)
+    local maxp = vector.add(pos, radius)
+
+    for x = minp.x, maxp.x do
+        for y = minp.y, maxp.y do
+            for z = minp.z, maxp.z do
+                local node = minetest.get_node_or_nil({ x = x, y = y, z = z })
+                if node then
+                    local name = node.name
+                    count[name] = (count[name] or 0) + 1
+                end
+            end
+        end
+    end
+
+    return count
+end
+
+local function update_scan_hud(player)
+    local name = player:get_player_name()
+    if not players_scans[name] then return end
+
+    local radius = players_scans[name].radius
+    local blocks = scan_blocks(player, radius)
+    local text = "Block scan in radius " .. radius .. ":\n"
+    for block_name, block_count in pairs(blocks) do
+        text = text .. block_name .. ": " .. block_count .. "\n"
+    end
+
+    -- Обновляем HUD
+    local hud_id = players_scans[name].hud_id
+    player:hud_change(hud_id, "text", text)
+end
+
+minetest.register_chatcommand("scanblocks", {
+    description = "Scan blocks around you",
+    params = "<radius>",
+    func = function(name, param)
+        local player = minetest.get_player_by_name(name)
+        if not player then
+            return false, "Player not found"
+        end
+        if not param then
+            return false, "Please provide a radius"
+        end
+        local radius = tonumber(param)
+        if not radius or radius < 1 or radius > 30 then
+            return false, "Invalid radius (1-30 allowed)"
+        end
+
+        if players_scans[name] then
+            -- Удаляем предыдущий HUD
+            player:hud_remove(players_scans[name].hud_id)
+            players_scans[name] = nil
+            return true, "Block scan disabled"
+        else
+            -- Создаём новый HUD
+            local hud_id = player:hud_add({
+                hud_elem_type = "text",
+                position = { x = 1, y = 0.5 }, -- Справа вверху
+                offset = { x = -10, y = 0 },
+                text = "Scanning blocks...",
+                alignment = { x = -1, y = 0 },
+                number = 0xFFFFFF,
+            })
+            players_scans[name] = { hud_id = hud_id, radius = radius }
+            return true, "Block scan enabled with radius " .. radius
+        end
+    end,
+})
+
+minetest.register_globalstep(function(dtime)
+    for _, player in ipairs(minetest.get_connected_players()) do
+        local name = player:get_player_name()
+        if players_scans[name] then
+            update_scan_hud(player)
+        end
+    end
+end)
+
+minetest.register_on_leaveplayer(function(player)
+    local name = player:get_player_name()
+    if players_scans[name] then
+        player:hud_remove(players_scans[name].hud_id)
+        players_scans[name] = nil
     end
 end)
