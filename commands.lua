@@ -409,3 +409,114 @@ minetest.register_chatcommand("tp_spawn", {
         return false, "Could not read spawn position"
     end
 })
+
+-- Хранение HUD ID для каждого игрока
+local players_huds = {}
+
+-- Функция для получения групп блока
+local function get_node_groups(node_name)
+    local def = minetest.registered_nodes[node_name]
+    if not def or not def.groups then return "none" end
+    
+    local groups = {}
+    for group, value in pairs(def.groups) do
+        table.insert(groups, group)
+    end
+    
+    if #groups == 0 then return "none" end
+    return table.concat(groups, ", ")
+end
+
+-- Функция для обновления информации в HUD
+local function update_node_info(player)
+    if not player or not players_huds[player:get_player_name()] then return end
+    
+    -- Получаем блок, на который смотрит игрок
+    local pointed = minetest.raycast(
+        vector.add(player:get_pos(), {x=0, y=1.5, z=0}),
+        vector.add(player:get_pos(), vector.multiply(player:get_look_dir(), 10)),
+        false, 
+        false
+    ):next()
+
+    local info_text
+    if pointed and pointed.type == "node" then
+        local pos = pointed.under
+        local node = minetest.get_node(pos)
+        local node_name = node.name
+        local meta = minetest.get_meta(pos)
+        local placer = meta:get_string("placer")
+        
+        -- Получаем описание узла если оно есть
+        local nodedef = minetest.registered_nodes[node_name]
+        local description = nodedef and nodedef.description or node_name
+        local groups = get_node_groups(node_name)
+        
+        info_text = string.format(
+            "Name: %s\n" ..
+            "Technical name: %s\n" ..
+            "Groups: %s\n" ..
+            "Position: %d, %d, %d\n" ..
+            "Placed by: %s",
+            description,
+            node_name,
+            groups,
+            pos.x, pos.y, pos.z,
+            (placer ~= "" and placer or "mapgen")
+        )
+    else
+        info_text = "Not looking at any block"
+    end
+
+    -- Обновляем текст в HUD только если он изменился
+    local hud_id = players_huds[player:get_player_name()]
+    if player:hud_get(hud_id).text ~= info_text then
+        player:hud_change(hud_id, "text", info_text)
+    end
+end
+
+minetest.register_chatcommand("nodeinfo", {
+    description = "Toggle node information HUD",
+    func = function(name, param)
+        local player = minetest.get_player_by_name(name)
+        if not player then
+            return false, "Player not found"
+        end
+
+        if players_huds[name] then
+            player:hud_remove(players_huds[name])
+            players_huds[name] = nil
+            return true, "Node info HUD disabled"
+        else
+            players_huds[name] = player:hud_add({
+                hud_elem_type = "text",
+                position = {x = 1, y = 0},
+                offset = {x = -4.5, y = 4.5},
+                text = "Not looking at any block",
+                alignment = {x = -1, y = 1},
+                number = 0xFFFFFF,
+                scale = {x = 100, y = 100}
+            })
+            return true, "Node info HUD enabled"
+        end
+    end
+})
+
+minetest.register_globalstep(function(dtime)
+    for _, player in ipairs(minetest.get_connected_players()) do
+        if players_huds[player:get_player_name()] then
+            update_node_info(player)
+        end
+    end
+end)
+
+minetest.register_on_leaveplayer(function(player)
+    players_huds[player:get_player_name()] = nil
+end)
+
+minetest.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, pointed_thing)
+    if placer and placer:is_player() then
+        local meta = minetest.get_meta(pos)
+        meta:set_string("placer", placer:get_player_name())
+    end
+end)
