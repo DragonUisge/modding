@@ -94,44 +94,6 @@ minetest.register_chatcommand("list-mobs", {
     end,
 })
 
-
--- Last Logout Command (unchanged)
-minetest.register_chatcommand("last-logout", {
-    params = "<playername>",
-    description = "Show the last logout time of a player",
-    func = function(name, param)
-        log("last-logout command called by " .. name .. " for player: " .. param)
-
-        if param == "" then
-            return false, "Please provide a player name"
-        end
-
-        local mod_storage = minetest.get_mod_storage()
-        local last_logout = mod_storage:get_string(param .. "_last_logout")
-
-        log("Retrieved last_logout for " .. param .. ": " .. (last_logout or "nil"))
-
-        if last_logout and last_logout ~= "" then
-            return true, param .. " last logged out on: " .. last_logout
-        else
-            return true, "No logout information found for " .. param
-        end
-    end,
-})
-
--- Add this to handle player logouts
-minetest.register_on_leaveplayer(function(player)
-    local name = player:get_player_name()
-    local mod_storage = minetest.get_mod_storage()
-    local logout_time = os.date("%Y-%m-%d %H:%M:%S")
-    mod_storage:set_string(name .. "_last_logout", logout_time)
-    log("Recorded logout for " .. name .. " at " .. logout_time)
-end)
-
-log("Custom commands loaded")
-
-
-
 -- Last Login Command
 minetest.register_chatcommand("last-login", {
     params = "<playername>",
