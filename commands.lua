@@ -630,36 +630,84 @@ minetest.register_chatcommand("inv", {
 
 
 
+local spectating = {}
 
-minetest.register_chatcommand("thirdperson", {
-    description = "Set camera to third person view",
-    func = function(name)
+minetest.register_chatcommand("spectate", {
+    description = "Switch camera to spectate another player",
+    privs = { interact = true },
+    params = "<playername>",
+    
+    func = function(name, param)
         local player = minetest.get_player_by_name(name)
         if not player then
             return false, "Player not found"
         end
 
-        -- Set camera offset behind and above player
-        player:set_eye_offset(
-            {x=0, y=2, z=8},  -- First person offset
-            {x=0, y=2, z=8}   -- Third person offset (same to maintain consistency)
-        )
+        if param == "" then
+            return false, "Please provide a player name"
+        end
 
-        return true, "Camera set to third person view"
+        local target = minetest.get_player_by_name(param)
+        if not target then
+            return false, "Target player '" .. param .. "' not found"
+        end
+
+        -- Store spectating info with camera offset
+        spectating[name] = {
+            target = param,
+            offset = {
+                x = 0,    -- No horizontal offset
+                y = 15,    -- 3 blocks up
+                z = -20     -- 8 blocks back
+            }
+        }
+        
+        -- Update camera view continuously
+        local function update_camera()
+            if not spectating[name] then return end
+            
+            local target = minetest.get_player_by_name(spectating[name].target)
+            local player = minetest.get_player_by_name(name)
+            
+            if target and player then
+                local offset = spectating[name].offset
+                player:set_eye_offset(
+                    {x=offset.x, y=offset.y, z=offset.z},  -- First person
+                    {x=offset.x, y=offset.y, z=offset.z}   -- Third person
+                )
+                minetest.after(0.1, update_camera)
+            end
+        end
+
+        update_camera()
+        return true, "Now spectating " .. param
     end
 })
 
--- Add command to reset view
-minetest.register_chatcommand("resetview", {
-    description = "Reset camera to normal view",
+minetest.register_chatcommand("spectate_stop", {
+    description = "Stop spectating",
     func = function(name)
-        local player = minetest.get_player_by_name(name)
-        if not player then
-            return false, "Player not found"
+        if spectating[name] then
+            local player = minetest.get_player_by_name(name)
+            if player then
+                -- Reset camera view
+                player:set_eye_offset({x=0, y=0, z=0}, {x=0, y=0, z=0})
+            end
+            spectating[name] = nil
+            return true, "Stopped spectating"
         end
+        return false, "You are not spectating anyone"
+    end
+})
 
-        player:set_eye_offset({x=0, y=0, z=0}, {x=0, y=0, z=0})
-        return true, "Camera view reset"
+minetest.register_chatcommand("spectate_stop", {
+    description = "Stop spectating",
+    func = function(name)
+        if spectating[name] then
+            spectating[name] = nil
+            return true, "Stopped spectating"
+        end
+        return false, "You are not spectating anyone"
     end
 })
 
