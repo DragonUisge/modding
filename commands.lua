@@ -700,18 +700,6 @@ minetest.register_chatcommand("spectate_stop", {
     end
 })
 
-minetest.register_chatcommand("spectate_stop", {
-    description = "Stop spectating",
-    func = function(name)
-        if spectating[name] then
-            spectating[name] = nil
-            return true, "Stopped spectating"
-        end
-        return false, "You are not spectating anyone"
-    end
-})
-
-
 minetest.register_chatcommand("pos", {
     description = "Get or teleport to another player's position",
     privs = { interact = true },
