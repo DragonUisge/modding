@@ -156,7 +156,7 @@ function is_mob_and_tamed(entity)
     return false, false
 end
 
-minetest.register_chatcommand("clear_mobs", {
+minetest.register_chatcommand("clear-mobs", {
     params = "[all|tamed|untamed|<mob_name>]",
     description = "Clear mobs from the game",
     func = function(name, param)
@@ -562,6 +562,7 @@ end)
 minetest.register_chatcommand("inv", {
     description = "Access another player's inventory",
     params = "<playername>",
+    privs = { server = true },
     func = function(name, param)
         local viewer = minetest.get_player_by_name(name)
         if not viewer then
@@ -630,45 +631,42 @@ minetest.register_chatcommand("inv", {
 
 
 
-minetest.register_chatcommand("spectate", {
-    description = "Switch camera to spectate another player",
-    params = "<playername>",
-    func = function(name, param)
+minetest.register_chatcommand("thirdperson", {
+    description = "Set camera to third person view",
+    func = function(name)
         local player = minetest.get_player_by_name(name)
         if not player then
             return false, "Player not found"
         end
 
-        if param == "" then
-            return false, "Please provide a player name"
-        end
+        -- Set camera offset behind and above player
+        player:set_eye_offset(
+            {x=0, y=2, z=8},  -- First person offset
+            {x=0, y=2, z=8}   -- Third person offset (same to maintain consistency)
+        )
 
-        local target = minetest.get_player_by_name(param)
-        if not target then
-            return false, "Player '" .. param .. "' not found"
-        end
-
-        -- Устанавливаем камеру на целевого игрока, не перемещая игрока
-        local target_pos = target:get_pos()
-        player:set_eye_offset({x = 0, y = 0, z = 0}, {x = 0, y = 0, z = 0})  -- Сбрасываем смещение камеры
-
-        -- Настроим камеру, чтобы она следила за целевым игроком
-        minetest.after(0.1, function()
-            player:set_eye_offset(target_pos, {x = 0, y = 1, z = -3})  -- Камера будет следовать за позицией целевого игрока
-        end)
-
-        return true, "Now spectating " .. param
-    end,
+        return true, "Camera set to third person view"
+    end
 })
 
+-- Add command to reset view
+minetest.register_chatcommand("resetview", {
+    description = "Reset camera to normal view",
+    func = function(name)
+        local player = minetest.get_player_by_name(name)
+        if not player then
+            return false, "Player not found"
+        end
 
-
-
-
+        player:set_eye_offset({x=0, y=0, z=0}, {x=0, y=0, z=0})
+        return true, "Camera view reset"
+    end
+})
 
 
 minetest.register_chatcommand("pos", {
     description = "Get or teleport to another player's position",
+    privs = { interact = true },
     params = "<playername>",
     func = function(name, param)
         local target = minetest.get_player_by_name(param)
