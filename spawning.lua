@@ -2,8 +2,8 @@
 -- Spawning --
 --------------
 
-modding.registered_mob_spawns = {}
-modding.registered_on_spawns = {}
+mobforge.registered_mob_spawns = {}
+mobforge.registered_on_spawns = {}
 
 -- Math --
 
@@ -47,7 +47,7 @@ local function can_spawn(pos, width, height)
 		for z = -width, width, w_iter do
 			for x = -width, width, w_iter do
 				pos2 = {x = pos.x + x, y = pos.y + y, z = pos.z + z}
-				local def = modding.get_node_def(pos2)
+				local def = mobforge.get_node_def(pos2)
 				if def.walkable then return false end
 			end
 		end
@@ -58,7 +58,7 @@ end
 local function do_on_spawn(pos, obj)
 	local name = obj and obj:get_luaentity().name
 	if not name then return end
-	local spawn_functions = modding.registered_on_spawns[name] or {}
+	local spawn_functions = mobforge.registered_on_spawns[name] or {}
 
 	if #spawn_functions > 0 then
 		for _, func in ipairs(spawn_functions) do
@@ -74,15 +74,15 @@ end
 
 local creative = minetest.settings:get_bool("creative_mode")
 
-function modding.register_spawn_item(name, def)
+function mobforge.register_spawn_item(name, def)
 	local inventory_image
 	if not def.inventory_image
 	and ((def.col1 and def.col2)
 	or (def.hex_primary and def.hex_secondary)) then
 		local primary = def.col1 or def.hex_primary
 		local secondary = def.col2 or def.hex_secondary
-		local base = "(modding_spawning_crystal_primary.png^[multiply:#" .. primary .. ")"
-		local spots = "(modding_spawning_crystal_secondary.png^[multiply:#" .. secondary .. ")"
+		local base = "(mobforge_spawning_crystal_primary.png^[multiply:#" .. primary .. ")"
+		local spots = "(mobforge_spawning_crystal_secondary.png^[multiply:#" .. secondary .. ")"
 		inventory_image = base .. "^" .. spots
 	end
 	local mod_name = name:split(":")[1]
@@ -135,18 +135,18 @@ function modding.register_spawn_item(name, def)
 	minetest.register_craftitem(def.itemstring or (mod_name .. ":spawn_" .. mob_name), def)
 end
 
-function modding.register_on_spawn(name, func)
-	if not modding.registered_on_spawns[name] then
-		modding.registered_on_spawns[name] = {}
+function mobforge.register_on_spawn(name, func)
+	if not mobforge.registered_on_spawns[name] then
+		mobforge.registered_on_spawns[name] = {}
 	end
-	table.insert(modding.registered_on_spawns[name], func)
+	table.insert(mobforge.registered_on_spawns[name], func)
 end
 
 --------------
 -- Spawning --
 --------------
 
---[[modding.register_abm_spawn("mymod:mymob", {
+--[[mobforge.register_abm_spawn("mymod:mymob", {
 	chance = 3000,
 	interval = 30,
 	min_height = 0,
@@ -162,17 +162,17 @@ end
 	spawn_cap = 5
 })]]
 
-local protected_spawn = minetest.settings:get_bool("modding_protected_spawn", true)
+local protected_spawn = minetest.settings:get_bool("mobforge_protected_spawn", true)
 local abr = (tonumber(minetest.get_mapgen_setting("active_block_range")) or 4) * 16
-local max_per_block = tonumber(minetest.settings:get("modding_mapblock_limit")) or 12
-local max_in_abr = tonumber(minetest.settings:get("modding_abr_limit")) or 24
-local min_abm_dist = min(abr / 2, tonumber(minetest.settings:get("modding_min_abm_dist")) or 32)
+local max_per_block = tonumber(minetest.settings:get("mobforge_mapblock_limit")) or 12
+local max_in_abr = tonumber(minetest.settings:get("mobforge_abr_limit")) or 24
+local min_abm_dist = min(abr / 2, tonumber(minetest.settings:get("mobforge_min_abm_dist")) or 32)
 
 local mobs_spawn = minetest.settings:get_bool("mobs_spawn") ~= false
 
 local mapgen_mobs = {}
 
-function modding.register_abm_spawn(mob, def)
+function mobforge.register_abm_spawn(mob, def)
 	local chance = def.chance or 3000
 	local interval = def.interval or 30
 	local min_height = def.min_height or 0
@@ -286,7 +286,7 @@ function modding.register_abm_spawn(mob, def)
 			local spawn_pos
 			for _ = 1, group_size do
 				offset = ceil(mob_width)
-				spawn_pos = modding.get_ground_level({
+				spawn_pos = mobforge.get_ground_level({
 					x = pos.x + random(-offset, offset),
 					y = pos.y,
 					z = pos.z + random(-offset, offset)
@@ -303,7 +303,7 @@ function modding.register_abm_spawn(mob, def)
 		end
 
 		minetest.log("action",
-			"[modding] [ABM Spawning] Spawned " .. group_size .. " " .. mob .. " at " .. minetest.pos_to_string(pos))
+			"[mobforge] [ABM Spawning] Spawned " .. group_size .. " " .. mob .. " at " .. minetest.pos_to_string(pos))
 
 	end
 
@@ -325,7 +325,7 @@ function modding.register_abm_spawn(mob, def)
 		table.insert(mapgen_mobs, mob)
 	end
 
-	modding.registered_mob_spawns[mob] = {
+	mobforge.registered_mob_spawns[mob] = {
 		chance = def.chance or 3000,
 		interval = def.interval or 30,
 		min_height = def.min_height or 0,
@@ -353,7 +353,7 @@ end
 
 -- Mapgen --
 
-minetest.register_node("modding:spawn_node", {
+minetest.register_node("mobforge:spawn_node", {
 	drawtype = "airlike",
 	groups = {not_in_creative_inventory = 1},
 	walkable = false,
@@ -363,12 +363,12 @@ minetest.register_node("modding:spawn_node", {
 })
 
 local mapgen_spawning = false
-local mapgen_spawning_int = tonumber(minetest.settings:get("modding_mapgen_spawn_interval")) or 64
+local mapgen_spawning_int = tonumber(minetest.settings:get("mobforge_mapgen_spawn_interval")) or 64
 
 if mapgen_spawning then
 	local chunk_delay = 0
 	local c_air = minetest.get_content_id("air")
-	local c_spawn = minetest.get_content_id("modding:spawn_node")
+	local c_spawn = minetest.get_content_id("mobforge:spawn_node")
 
 	minetest.register_on_generated(function(minp, maxp)
 		if chunk_delay > 0 then chunk_delay = chunk_delay - 1 end
@@ -393,7 +393,7 @@ if mapgen_spawning then
 		for _, mob_name in ipairs(mapgen_mobs) do
 			local mob_spawned = false
 
-			def = modding.registered_mob_spawns[mob_name]
+			def = mobforge.registered_mob_spawns[mob_name]
 
 			center = {
 				x = min_x + (max_x - min_x) * 0.5,
@@ -478,11 +478,11 @@ if mapgen_spawning then
 		end
 	end)
 
-	local spawn_interval = tonumber(minetest.settings:get("modding_spawn_interval")) or 10
+	local spawn_interval = tonumber(minetest.settings:get("mobforge_spawn_interval")) or 10
 
 	minetest.register_abm({
-		label = "modding Spawning",
-		nodenames = {"modding:spawn_node"},
+		label = "mobforge Spawning",
+		nodenames = {"mobforge:spawn_node"},
 		interval = spawn_interval,
 		chance = 1,
 		action = function(pos)
@@ -509,19 +509,19 @@ if mapgen_spawning then
 					do_on_spawn(pos, obj)
 				end
 				minetest.log("action",
-					"[modding] Spawned " .. amount .. " " .. name .. " at " .. minetest.pos_to_string(pos))
+					"[mobforge] Spawned " .. amount .. " " .. name .. " at " .. minetest.pos_to_string(pos))
 			else
 				obj = minetest.add_entity(pos, name)
 				do_on_spawn(pos, obj)
 				minetest.log("action",
-					"[modding] Spawned a " .. name .. " at " .. minetest.pos_to_string(pos))
+					"[mobforge] Spawned a " .. name .. " at " .. minetest.pos_to_string(pos))
 			end
 			minetest.remove_node(pos)
 		end,
 	})
 end
 
-function modding.register_mob_spawn(name, def)
+function mobforge.register_mob_spawn(name, def)
 	local spawn_def = {
 		chance = def.chance or 5,
 		min_height = def.min_height or 0,
@@ -540,15 +540,15 @@ function modding.register_mob_spawn(name, def)
 		spawn_cap = def.spawn_cap or 5,
 		--send_debug = def.send_debug or false
 	}
-	--modding.registered_mob_spawns[name] = spawn_def
+	--mobforge.registered_mob_spawns[name] = spawn_def
 
-	modding.register_abm_spawn(name, spawn_def)
+	mobforge.register_abm_spawn(name, spawn_def)
 end
 
-function modding.register_spawn_egg(name, col1, col2, inventory_image)
+function mobforge.register_spawn_egg(name, col1, col2, inventory_image)
 	if col1 and col2 then
-		local base = "(modding_spawning_crystal_primary.png^[multiply:#" .. col1 .. ")"
-		local spots = "(modding_spawning_crystal_secondary.png^[multiply:#" .. col2 .. ")"
+		local base = "(mobforge_spawning_crystal_primary.png^[multiply:#" .. col1 .. ")"
+		local spots = "(mobforge_spawning_crystal_secondary.png^[multiply:#" .. col2 .. ")"
 		inventory_image = base .. "^" .. spots
 	end
 	local mod_name = name:split(":")[1]

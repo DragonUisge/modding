@@ -61,7 +61,7 @@ local dir2yaw = minetest.dir_to_yaw
 
 -- Get Boid Members --
 
-function modding.get_boid_cached(self)
+function mobforge.get_boid_cached(self)
 	local pos = self.object:get_pos()
 	if not pos then return end
 	local radius = self.tracking_range * 0.5 or 4
@@ -96,10 +96,10 @@ end
 
 -- Calculate Boid Movement Direction
 
-function modding.get_boid_dir(self)
+function mobforge.get_boid_dir(self)
 	local pos = self.object:get_pos()
 	if not pos then return end
-	local boids = modding.get_boid_cached(self)
+	local boids = mobforge.get_boid_cached(self)
 	if #boids < 2 then return end
 	local pos_no, pos_sum = 0, {x = 0, y = 0, z = 0}
 	local sum_sin, sum_cos = 0, 0
@@ -150,7 +150,7 @@ end
 
 -- Deprecated
 
-function modding.get_boid_members(pos, radius, name)
+function mobforge.get_boid_members(pos, radius, name)
 	local objects = minetest.get_objects_inside_radius(pos, radius)
 	if #objects < 2 then return {} end
 	local members = {}
@@ -174,9 +174,9 @@ function modding.get_boid_members(pos, radius, name)
 	return members
 end
 
-function modding.get_boid_angle(self, _boids, range)
+function mobforge.get_boid_angle(self, _boids, range)
 	local pos = self.object:get_pos()
-	local boids = _boids or modding.get_boid_members(pos, range or 4, self.name)
+	local boids = _boids or mobforge.get_boid_members(pos, range or 4, self.name)
 	if #boids < 3 then return end
 	local yaw = self.object:get_yaw()
 	local lift = self.object:get_velocity().y

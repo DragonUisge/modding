@@ -47,7 +47,7 @@ local function get_sightline(pos1, pos2)
 		else
 			pos = pos1
 		end
-		if modding.get_node_def(pos).walkable then
+		if mobforge.get_node_def(pos).walkable then
 			return false
 		end
 	end
@@ -98,7 +98,7 @@ function mob:indicate_damage()
 	self._original_texture_mod = self._original_texture_mod or self.object:get_texture_mod()
 	self.object:set_texture_mod(self._original_texture_mod .. "^[colorize:#FF000040")
 	minetest.after(0.2, function()
-		if modding.is_alive(self) then
+		if mobforge.is_alive(self) then
 			self.object:set_texture_mod(self._original_texture_mod)
 		end
 	end)
@@ -298,11 +298,11 @@ end
 function mob:get_wander_pos(min_range, max_range, dir)
 	local pos = vec_center(self.object:get_pos())
 	pos.y = floor(pos.y + 0.5)
-	if modding.get_node_def(pos).walkable then -- Occurs if small mob is touching a fence
+	if mobforge.get_node_def(pos).walkable then -- Occurs if small mob is touching a fence
 		local offset = vector.add(pos, vec_multi(vec_dir(pos, self.object:get_pos()), 1.5))
 		pos.x = floor(offset.x + 0.5)
 		pos.z = floor(offset.z + 0.5)
-		pos = modding.get_ground_level(pos, 1)
+		pos = mobforge.get_ground_level(pos, 1)
 	end
 	local width = self.width
 	local outset = random(min_range, max_range)
@@ -313,7 +313,7 @@ function mob:get_wander_pos(min_range, max_range, dir)
 		z = random(-10, 10) * 0.1
 	})
 	local pos2 = vec_add(pos, vec_multi(move_dir, width))
-	if modding.get_node_def(pos2).walkable
+	if mobforge.get_node_def(pos2).walkable
 	and not dir then
 		for _ = 1, 3 do
 			move_dir = {
@@ -322,7 +322,7 @@ function mob:get_wander_pos(min_range, max_range, dir)
 				z = move_dir.x * -1
 			}
 			pos2 = vec_add(pos, vec_multi(move_dir, width))
-			if not modding.get_node_def(pos2).walkable then
+			if not mobforge.get_node_def(pos2).walkable then
 				break
 			end
 		end
@@ -332,11 +332,11 @@ function mob:get_wander_pos(min_range, max_range, dir)
 	for i = 1, outset do
 		local a_pos = vec_add(pos2, vec_multi(move_dir, i))
 		local b_pos = {x = a_pos.x, y = a_pos.y - 1, z = a_pos.z}
-		if modding.get_node_def(a_pos).walkable
-		or not modding.get_node_def(b_pos).walkable then
-			a_pos = modding.get_ground_level(a_pos, floor(self.stepheight or 1))
+		if mobforge.get_node_def(a_pos).walkable
+		or not mobforge.get_node_def(b_pos).walkable then
+			a_pos = mobforge.get_ground_level(a_pos, floor(self.stepheight or 1))
 		end
-		if not modding.get_node_def(a_pos).walkable then
+		if not mobforge.get_node_def(a_pos).walkable then
 			pos2 = a_pos
 		else
 			break
@@ -347,11 +347,11 @@ end
 
 function mob:get_wander_pos_3d(min_range, max_range, dir, vert_bias)
 	local pos = vec_center(self.object:get_pos())
-	if modding.get_node_def(pos).walkable then -- Occurs if small mob is touching a fence
+	if mobforge.get_node_def(pos).walkable then -- Occurs if small mob is touching a fence
 		local offset = vector.add(pos, vec_multi(vec_dir(pos, self.object:get_pos()), 1.5))
 		pos.x = floor(offset.x + 0.5)
 		pos.z = floor(offset.z + 0.5)
-		pos = modding.get_ground_level(pos, 1)
+		pos = mobforge.get_ground_level(pos, 1)
 	end
 	local width = self.width
 	local outset = random(min_range, max_range)
@@ -362,7 +362,7 @@ function mob:get_wander_pos_3d(min_range, max_range, dir, vert_bias)
 		z = random(-10, 10) * 0.1
 	})
 	local pos2 = vec_add(pos, vec_multi(move_dir, width))
-	if modding.get_node_def(pos2).walkable
+	if mobforge.get_node_def(pos2).walkable
 	and not dir then
 		for _ = 1, 3 do
 			move_dir = {
@@ -371,7 +371,7 @@ function mob:get_wander_pos_3d(min_range, max_range, dir, vert_bias)
 				z = move_dir.x * -1
 			}
 			pos2 = vec_add(pos, vec_multi(move_dir, width))
-			if not modding.get_node_def(pos2).walkable then
+			if not mobforge.get_node_def(pos2).walkable then
 				break
 			end
 		end
@@ -380,10 +380,10 @@ function mob:get_wander_pos_3d(min_range, max_range, dir, vert_bias)
 	end
 	for i = 1, outset do
 		local a_pos = vec_add(pos2, vec_multi(move_dir, i))
-		if modding.get_node_def(a_pos).walkable then
-			a_pos = modding.get_ground_level(a_pos, floor(self.stepheight or 1))
+		if mobforge.get_node_def(a_pos).walkable then
+			a_pos = mobforge.get_ground_level(a_pos, floor(self.stepheight or 1))
 		end
-		if not modding.get_node_def(a_pos).walkable then
+		if not mobforge.get_node_def(a_pos).walkable then
 			pos2 = a_pos
 		else
 			break
@@ -394,17 +394,17 @@ end
 
 function mob:is_pos_safe(pos, ignore_liquid)
 	if not pos then return end
-	local n_def = modding.get_node_def(pos)
+	local n_def = mobforge.get_node_def(pos)
 	if minetest.get_item_group(n_def.name, "igniter") > 0
 	or (not ignore_liquid
 	and (n_def.drawtype == "liquid"
-	or modding.get_node_def(vec_raise(pos, -1)).drawtype == "liquid")) then return false end
+	or mobforge.get_node_def(vec_raise(pos, -1)).drawtype == "liquid")) then return false end
 	local fall_safe = false
 	local fall_pos = {x = pos.x, y = floor(pos.y + 0.5), z = pos.z}
 	if self.max_fall ~= 0 then
 		for _ = 1, self.max_fall or 3 do
 			fall_pos.y = fall_pos.y - 1
-			if modding.get_node_def(fall_pos).walkable then
+			if mobforge.get_node_def(fall_pos).walkable then
 				fall_safe = true
 				break
 			end
@@ -661,7 +661,7 @@ function mob:follow_item(stack)
 end
 
 function mob:get_target(target)
-	local alive = modding.is_alive(target)
+	local alive = mobforge.is_alive(target)
 	if not alive then
 		return false, false, nil
 	end
@@ -685,7 +685,7 @@ function mob:store_nearby_objects(radius)
 	if #objects < 1 then return end
 	local objs = {}
 	for _, object in ipairs(objects) do
-		if modding.is_alive(object)
+		if mobforge.is_alive(object)
 		and object ~= self.object then
 			local ent = object:get_luaentity()
 			local player = object:is_player()
@@ -736,7 +736,7 @@ function mob:get_utility()
 end
 
 function mob:initiate_utility(utility, ...)
-	local func = modding.registered_utilities[utility]
+	local func = mobforge.registered_utilities[utility]
 	if not func or not self._utility_data then return end
 	self._utility_data.utility = utility
 	self:clear_action()
@@ -976,7 +976,7 @@ end
 -- Physics
 
 local function collision_detection(self)
-	if not modding.is_alive(self)
+	if not mobforge.is_alive(self)
 	or self.fancy_collide == false then return end
 	local pos = self.stand_pos
 	local width = self.width + 0.25
@@ -987,7 +987,7 @@ local function collision_detection(self)
 	local vel, vel2
 	for i = 2, #objects do
 		local object = objects[i]
-		if modding.is_alive(object)
+		if mobforge.is_alive(object)
 		and not self.object:get_attach()
 		and not object:get_attach() then
 			if i > 5 then break end
@@ -1010,7 +1010,7 @@ local mob_friction = 7
 
 function mob:_physics()
 	-- Physics
-	modding.default_water_physics(self)
+	mobforge.default_water_physics(self)
 	collision_detection(self)
 
 	-- Cache Environment Info
@@ -1055,7 +1055,7 @@ function mob:move_to(goal, method, speed_factor)
     end
 
     -- Get movement method
-    local get_method = modding.registered_movement_methods[method]
+    local get_method = mobforge.registered_movement_methods[method]
     
     -- Initialize new movement function if needed
     if get_method and not data.func then
@@ -1232,7 +1232,7 @@ end
 
 -- Vitals
 
-function modding.register_mob(name, def)
+function mobforge.register_mob(name, def)
 	local box_width = def.hitbox and def.hitbox.width or 0.5
 	local box_height = def.hitbox and def.hitbox.height or 1
 	local hitbox = {-box_width, 0, -box_width, box_width, box_height, box_width}
@@ -1246,20 +1246,20 @@ function modding.register_mob(name, def)
 		def.static_save = true
 	end
 	def.collisionbox = def.collisionbox or hitbox
-	def._modding_mob = true
+	def._mobforge_mob = true
 
 	def.sounds = def.sounds or {}
 
 	if not def.sounds.hit then
 		def.sounds.hit = {
-			name = "modding_hit",
+			name = "mobforge_hit",
 			gain = 0.5,
 			distance = 16,
 			variations = 3
 		}
 	end
 
-	def._vitals = def._vitals or modding.default_vitals
+	def._vitals = def._vitals or mobforge.default_vitals
 
 	def.on_activate = function(self, staticdata, dtime)
 		return self:activate(staticdata, dtime)

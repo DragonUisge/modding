@@ -1,6 +1,6 @@
-modding = {}
+mobforge = {}
 
-local path = minetest.get_modpath("modding")
+local path = minetest.get_modpath("mobforge")
 
 dofile(path.."/api.lua")
 dofile(path.."/pathfinding.lua")
@@ -17,7 +17,7 @@ local function load_file(filepath, filename)
     if io.open(filepath .. "/" .. filename, "r") then
         dofile(filepath .. "/" .. filename)
     else
-        minetest.log("action", "[modding] The file " .. filename .. " could not be loaded.")
+        minetest.log("action", "[mobforge] The file " .. filename .. " could not be loaded.")
     end
 end
 

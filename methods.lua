@@ -38,7 +38,7 @@ local dir2yaw = minetest.dir_to_yaw
 --[[local function debugpart(pos, time, tex)
 	minetest.add_particle({
 		pos = pos,
-		texture = tex or "modding_particle_blue.png",
+		texture = tex or "mobforge_particle_blue.png",
 		expirationtime = time or 0.1,
 		glow = 16,
 		size = 24
@@ -49,10 +49,10 @@ end]]
 -- Local Utilities --
 ---------------------
 
-local get_node_def = modding.get_node_def
---local get_node_height = modding.get_node_height_from_def
+local get_node_def = mobforge.get_node_def
+--local get_node_height = mobforge.get_node_height_from_def
 
-function modding.get_collision(self, dir, range)
+function mobforge.get_collision(self, dir, range)
 	local pos, yaw = self.object:get_pos(), self.object:get_yaw()
 	if not pos then return end
 	local width, height = self.width or 0.5, self.height or 1
@@ -106,9 +106,9 @@ function modding.get_collision(self, dir, range)
 	end
 end
 
-modding.get_collision_ranged = modding.get_collision
+mobforge.get_collision_ranged = mobforge.get_collision
 
-local get_collision = modding.get_collision
+local get_collision = mobforge.get_collision
 
 local function get_avoidance_dir(self)
 	local pos = self.object:get_pos()
@@ -145,7 +145,7 @@ local function get_collision_single(pos, water)
 	end
 end
 
-function modding.get_avoidance_lift(self, pos2, range)
+function mobforge.get_avoidance_lift(self, pos2, range)
 	range = ceil(max(range or 1, 0.5))
 	local height_half = (self.height or 1) * 0.5
 	local center_y = pos2.y + height_half
@@ -158,14 +158,14 @@ function modding.get_avoidance_lift(self, pos2, range)
 	for i = 1, range, 0.5 do -- 0.5 increment increases accuracy
 		if ceil_pos and floor_pos then break end
 		check_pos.y = center_y + i
-		def = modding.get_node_def(check_pos)
+		def = mobforge.get_node_def(check_pos)
 		if not ceil_pos
 		and (def.walkable
 		or minetest.get_item_group(def.name, "liquid") > 0) then
 			ceil_pos = check_pos
 		end
 		check_pos.y = center_y - i
-		def = modding.get_node_def(check_pos)
+		def = mobforge.get_node_def(check_pos)
 		if not floor_pos
 		and (def.walkable
 		or minetest.get_item_group(def.name, "liquid") > 0) then
@@ -187,7 +187,7 @@ function modding.get_avoidance_lift(self, pos2, range)
 	return ((check_pos.y + altitude) - center_y) / range * 2
 end
 
-function modding.get_avoidance_lift_aquatic(self, pos2, range)
+function mobforge.get_avoidance_lift_aquatic(self, pos2, range)
 	range = ceil(max(range or 1, 0.5))
 	local height_half = (self.height or 1) * 0.5
 	local center_y = pos2.y + height_half
@@ -200,12 +200,12 @@ function modding.get_avoidance_lift_aquatic(self, pos2, range)
 		if ceil_pos and floor_pos then break end
 		check_pos.y = center_y + i
 		if not ceil_pos
-		and minetest.get_item_group(modding.get_node_def(check_pos).name, "liquid") < 1 then
+		and minetest.get_item_group(mobforge.get_node_def(check_pos).name, "liquid") < 1 then
 			ceil_pos = check_pos
 		end
 		check_pos.y = center_y - i
 		if not floor_pos
-		and minetest.get_item_group(modding.get_node_def(check_pos).name, "liquid") < 1 then
+		and minetest.get_item_group(mobforge.get_node_def(check_pos).name, "liquid") < 1 then
 			floor_pos = check_pos
 		end
 	end
@@ -241,7 +241,7 @@ local steer_directions = {
 
 -- Context Methods
 
-function modding.get_context_default(self, goal, steer_dir, interest, danger, range)
+function mobforge.get_context_default(self, goal, steer_dir, interest, danger, range)
 	local pos = self.object:get_pos()
 	if not pos then return end
 	local width, height = self.width or 0.5, self.height or 1
@@ -253,7 +253,7 @@ function modding.get_context_default(self, goal, steer_dir, interest, danger, ra
 	local pointed = ray:next()
 	if pointed
 	and pointed.type == "node"
-	and modding.get_node_def(pointed.under).walkable then
+	and mobforge.get_node_def(pointed.under).walkable then
 		collision = pointed.under
 	end
 
@@ -269,13 +269,13 @@ function modding.get_context_default(self, goal, steer_dir, interest, danger, ra
 	return interest, danger
 end
 
-function modding.get_context_large(self, goal, steer_dir, interest, danger, range)
+function mobforge.get_context_large(self, goal, steer_dir, interest, danger, range)
 	local pos = self.object:get_pos()
 	if not pos then return end
 	local width, height = self.width or 0.5, self.height or 1
 	local y_offset = math.min(self.stepheight or height)
 	pos.y = pos.y + y_offset
-	local collision = modding.get_collision(self, steer_dir, range)
+	local collision = mobforge.get_collision(self, steer_dir, range)
 
 	if collision then
 		local dir2goal = vec_normal(vec_dir(pos, goal))
@@ -289,7 +289,7 @@ function modding.get_context_large(self, goal, steer_dir, interest, danger, rang
 	return interest, danger
 end
 
-function modding.get_context_small(self, goal, steer_dir, interest, danger, range)
+function mobforge.get_context_small(self, goal, steer_dir, interest, danger, range)
 	local pos = self.object:get_pos()
 	if not pos then return end
 	pos = vector.round(pos)
@@ -308,7 +308,7 @@ function modding.get_context_small(self, goal, steer_dir, interest, danger, rang
 	return interest, danger
 end
 
-function modding.get_context_small_aquatic(self, goal, steer_dir, interest, danger, range)
+function mobforge.get_context_small_aquatic(self, goal, steer_dir, interest, danger, range)
 	local pos = self.object:get_pos()
 	if not pos then return end
 	pos = vector.round(pos)
@@ -330,9 +330,9 @@ end
 
 -- Calculate Steering
 
-function modding.calc_steering(self, goal, get_context, range)
+function mobforge.calc_steering(self, goal, get_context, range)
 	if not goal then return end
-	get_context = get_context or modding.get_context_default
+	get_context = get_context or mobforge.get_context_default
 	local pos, yaw = self.object:get_pos(), self.object:get_yaw()
 	if not pos or not yaw then return end
 	range = math.max(range or 2, 2)
@@ -357,16 +357,16 @@ end
 
 -- DEPRECATED
 
-function modding.get_context_steering(self, goal, range, water)
-	local context = modding.get_context_default
+function mobforge.get_context_steering(self, goal, range, water)
+	local context = mobforge.get_context_default
 	local width, height = self.width, self.height
 	if width > 0.5
 	or height > 1 then
-		context = modding.get_context_large
+		context = mobforge.get_context_large
 	elseif water then
-		context = modding.get_context_small_aquatic
+		context = mobforge.get_context_small_aquatic
 	end
-	return modding.calc_steering(self, goal, context, range)
+	return mobforge.calc_steering(self, goal, context, range)
 end
 
 -------------
@@ -378,7 +378,7 @@ end
 
 -- Move
 
-function modding.action_move(self, pos2, timeout, method, speed_factor, anim)
+function mobforge.action_move(self, pos2, timeout, method, speed_factor, anim)
 	local timer = timeout or 4
 	local function func(_self)
 		timer = timer - _self.dtime
@@ -392,18 +392,18 @@ function modding.action_move(self, pos2, timeout, method, speed_factor, anim)
 		end
 		if timer <= 0
 		or not safe
-		or _self:move_to(pos2, method or "modding:obstacle_avoidance", speed_factor or 0.5) then
+		or _self:move_to(pos2, method or "mobforge:obstacle_avoidance", speed_factor or 0.5) then
 			return true
 		end
 	end
 	self:set_action(func)
 end
 
-modding.action_walk = modding.action_move -- Support for outdated versions
+mobforge.action_walk = mobforge.action_move -- Support for outdated versions
 
 -- Idle
 
-function modding.action_idle(self, time, anim)
+function mobforge.action_idle(self, time, anim)
 	local timer = time
 	local function func(_self)
 		_self:set_gravity(-9.8)
@@ -419,7 +419,7 @@ end
 
 -- Rotate on Z axis in random direction until 90 degree angle is reached
 
-function modding.action_fallover(self)
+function mobforge.action_fallover(self)
 	local zrot = 0
 	local init = false
 	local dir = 1
@@ -468,7 +468,7 @@ end
 	return path
 end]]
 
-modding.register_movement_method("modding:pathfind_theta", function(self)
+mobforge.register_movement_method("mobforge:pathfind_theta", function(self)
 	local path = {}
 	local steer_to
 	local steer_int = 0
@@ -490,9 +490,9 @@ modding.register_movement_method("modding:pathfind_theta", function(self)
 		local path_dir = #path > 0 and vec_dir(pos, path[2] or path[1])
 
 		steer_int = (steer_int > 0 and steer_int - _self.dtime) or 1 / math.max(speed, 1)
-		steer_to = path_dir or (steer_int <= 0 and modding.calc_steering(_self, goal)) or steer_to
+		steer_to = path_dir or (steer_int <= 0 and mobforge.calc_steering(_self, goal)) or steer_to
 
-		path = (#path > 0 and path) or (modding.pathfinder.find_path_theta(_self, pos, goal) or {})
+		path = (#path > 0 and path) or (mobforge.pathfinder.find_path_theta(_self, pos, goal) or {})
 
 		if path_dir
 		and ((path[2] and vec_dist(pos, path[2]) < arrival_threshold)
@@ -507,7 +507,7 @@ modding.register_movement_method("modding:pathfind_theta", function(self)
 	return func
 end)
 
-modding.register_movement_method("modding:pathfind", function(self)
+mobforge.register_movement_method("mobforge:pathfind", function(self)
 	local path = {}
 	local steer_to
 	local steer_int = 0
@@ -529,9 +529,9 @@ modding.register_movement_method("modding:pathfind", function(self)
 		local path_dir = #path > 0 and vec_dir(pos, path[2] or path[1])
 
 		steer_int = (steer_int > 0 and steer_int - _self.dtime) or 1 / math.max(speed, 1)
-		steer_to = path_dir or (steer_int <= 0 and modding.calc_steering(_self, goal)) or steer_to
+		steer_to = path_dir or (steer_int <= 0 and mobforge.calc_steering(_self, goal)) or steer_to
 
-		path = (#path > 0 and path) or (modding.pathfinder.find_path(_self, pos, goal) or {})
+		path = (#path > 0 and path) or (mobforge.pathfinder.find_path(_self, pos, goal) or {})
 
 		if path_dir
 		and ((path[2] and vec_dist(pos, path[2]) < arrival_threshold + 0.5)
@@ -549,7 +549,7 @@ end)
 
 -- Steering
 
-modding.register_movement_method("modding:steer_small", function(self)
+mobforge.register_movement_method("mobforge:steer_small", function(self)
 	local steer_to
 	local steer_int = 0
 	self:set_gravity(-9.8)
@@ -564,7 +564,7 @@ modding.register_movement_method("modding:steer_small", function(self)
 		local turn_rate = abs(_self.turn_rate or 5)
 		local speed = abs(_self.speed or 2) * speed_factor or 0.5
 		steer_int = (steer_int > 0 and steer_int - _self.dtime) or 1 / math.max(speed, 1)
-		steer_to = (steer_int <= 0 and modding.calc_steering(_self, goal)) or steer_to
+		steer_to = (steer_int <= 0 and mobforge.calc_steering(_self, goal)) or steer_to
 		-- Apply Movement
 		_self:turn_to(dir2yaw(steer_to or vec_dir(pos, goal)), turn_rate)
 		_self:set_forward_velocity(speed)
@@ -572,7 +572,7 @@ modding.register_movement_method("modding:steer_small", function(self)
 	return func
 end)
 
-modding.register_movement_method("modding:steer_large", function(self)
+mobforge.register_movement_method("mobforge:steer_large", function(self)
 	local steer_to
 	local steer_int = 0
 	self:set_gravity(-9.8)
@@ -587,7 +587,7 @@ modding.register_movement_method("modding:steer_large", function(self)
 		local turn_rate = abs(_self.turn_rate or 5)
 		local speed = abs(_self.speed or 2) * speed_factor or 0.5
 		steer_int = (steer_int > 0 and steer_int - _self.dtime) or 1 / math.max(speed, 1)
-		steer_to = (steer_int <= 0 and modding.calc_steering(_self, goal, modding.get_context_large)) or steer_to
+		steer_to = (steer_int <= 0 and mobforge.calc_steering(_self, goal, mobforge.get_context_large)) or steer_to
 		-- Apply Movement
 		_self:turn_to(dir2yaw(steer_to or vec_dir(pos, goal)), turn_rate)
 		_self:set_forward_velocity(speed)
@@ -595,7 +595,7 @@ modding.register_movement_method("modding:steer_large", function(self)
 	return func
 end)
 
-modding.register_movement_method("modding:walk_simple", function(self)
+mobforge.register_movement_method("mobforge:walk_simple", function(self)
 	self:set_gravity(-9.8)
 	local function func(_self, goal, speed_factor)
 		local pos = _self.object:get_pos()
@@ -616,7 +616,7 @@ end)
 
 -- Deprecated
 
-modding.register_movement_method("modding:context_based_steering", function(self)
+mobforge.register_movement_method("mobforge:context_based_steering", function(self)
 	local steer_to
 	local steer_int = 0
 	self:set_gravity(-9.8)
@@ -631,7 +631,7 @@ modding.register_movement_method("modding:context_based_steering", function(self
 		local turn_rate = abs(_self.turn_rate or 5)
 		local speed = abs(_self.speed or 2) * speed_factor or 0.5
 		steer_int = (steer_int > 0 and steer_int - _self.dtime) or 1 / math.max(speed, 1)
-		steer_to = (steer_int <= 0 and modding.calc_steering(_self, goal, modding.get_context_large)) or steer_to
+		steer_to = (steer_int <= 0 and mobforge.calc_steering(_self, goal, mobforge.get_context_large)) or steer_to
 		-- Apply Movement
 		_self:turn_to(dir2yaw(steer_to or vec_dir(pos, goal)), turn_rate)
 		_self:set_forward_velocity(speed)
@@ -639,7 +639,7 @@ modding.register_movement_method("modding:context_based_steering", function(self
 	return func
 end)
 
-modding.register_movement_method("modding:obstacle_avoidance", function(self)
+mobforge.register_movement_method("mobforge:obstacle_avoidance", function(self)
 	local box = clamp(self.width, 0.5, 1.5)
 	local steer_to
 	local steer_timer = 0.25

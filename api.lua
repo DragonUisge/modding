@@ -1,8 +1,8 @@
 --------------
--- Modding --
+-- mobforge --
 --------------
 
-modding.api = {}
+mobforge.api = {}
 
 -- Math --
 
@@ -41,23 +41,23 @@ end
 -- Registration Functions --
 ----------------------------
 
-modding.registered_movement_methods = {}
+mobforge.registered_movement_methods = {}
 
-function modding.register_movement_method(name, func)
-	modding.registered_movement_methods[name] = func
+function mobforge.register_movement_method(name, func)
+	mobforge.registered_movement_methods[name] = func
 end
 
-modding.registered_utilities = {}
+mobforge.registered_utilities = {}
 
-function modding.register_utility(name, func)
-	modding.registered_utilities[name] = func
+function mobforge.register_utility(name, func)
+	mobforge.registered_utilities[name] = func
 end
 
 ---------------
 -- Utilities --
 ---------------
 
-function modding.is_valid(mob)
+function mobforge.is_valid(mob)
 	if not mob then return false end
 	if type(mob) == "table" then mob = mob.object end
 	if type(mob) == "userdata" then
@@ -70,8 +70,8 @@ function modding.is_valid(mob)
 	return false
 end
 
-function modding.is_alive(mob)
-	if not modding.is_valid(mob) then
+function mobforge.is_alive(mob)
+	if not mobforge.is_valid(mob) then
 		return false
 	end
 	if type(mob) == "table" then
@@ -91,7 +91,7 @@ end
 
 local default_node_def = {walkable = true} -- both ignore and unknown nodes are walkable
 
-function modding.get_node_height_from_def(name)
+function mobforge.get_node_height_from_def(name)
 	local def = minetest.registered_nodes[name] or default_node_def
 	if not def then return 0.5 end
 	if def.walkable then
@@ -118,21 +118,21 @@ end
 
 local get_node = minetest.get_node
 
-function modding.get_node_def(node) -- Node can be name or pos
+function mobforge.get_node_def(node) -- Node can be name or pos
 	if type(node) == "table" then
 		node = get_node(node).name
 	end
 	local def = minetest.registered_nodes[node] or default_node_def
 	if def.walkable
-	and modding.get_node_height_from_def(node) < 0.26 then
+	and mobforge.get_node_height_from_def(node) < 0.26 then
 		def.walkable = false -- workaround for nodes like snow
 	end
 	return def
 end
 
-local get_node_def = modding.get_node_def
+local get_node_def = mobforge.get_node_def
 
-function modding.get_ground_level(pos, range)
+function mobforge.get_ground_level(pos, range)
 	range = range or 2
 	local above = vector.round(pos)
 	local under = {x = above.x, y = above.y - 1, z = above.z}
@@ -154,7 +154,7 @@ function modding.get_ground_level(pos, range)
 	return above
 end
 
-function modding.is_pos_moveable(pos, width, height)
+function mobforge.is_pos_moveable(pos, width, height)
 	local edge1 = {
 		x = pos.x - (width + 0.2),
 		y = pos.y,
@@ -175,7 +175,7 @@ function modding.is_pos_moveable(pos, width, height)
 			for pointed_thing in ray do
 				if pointed_thing.type == "node" then
 					local name = get_node(pointed_thing.under).name
-					if modding.get_node_def(name).walkable then
+					if mobforge.get_node_def(name).walkable then
 						return false
 					end
 				end
@@ -205,7 +205,7 @@ local function is_blocked_thin(pos, height)
 	return false
 end
 
-function modding.is_blocked(pos, width, height)
+function mobforge.is_blocked(pos, width, height)
 	if width <= 0.5 then
 		return is_blocked_thin(pos, height)
 	end
@@ -241,12 +241,12 @@ function modding.is_blocked(pos, width, height)
 	return false
 end
 
-function modding.fast_ray_sight(pos1, pos2, water)
+function mobforge.fast_ray_sight(pos1, pos2, water)
 	local ray = minetest.raycast(pos1, pos2, false, water or false)
 	local pointed_thing = ray:next()
 	while pointed_thing do
 		if pointed_thing.type == "node"
-		and modding.get_node_def(pointed_thing.under).walkable then
+		and mobforge.get_node_def(pointed_thing.under).walkable then
 			return false, vec_dist(pos1, pointed_thing.intersection_point), pointed_thing.ref, pointed_thing.intersection_point
 		end
 		pointed_thing = ray:next()
@@ -254,36 +254,36 @@ function modding.fast_ray_sight(pos1, pos2, water)
 	return true, vec_dist(pos1, pos2), false, pos2
 end
 
-local fast_ray_sight = modding.fast_ray_sight
+local fast_ray_sight = mobforge.fast_ray_sight
 
-function modding.sensor_floor(self, range, water)
+function mobforge.sensor_floor(self, range, water)
 	local pos = self.object:get_pos()
 	local pos2 = vec_raise(pos, -range)
 	local _, dist, node = fast_ray_sight(pos, pos2, water or false)
 	return dist, node
 end
 
-function modding.sensor_ceil(self, range, water)
+function mobforge.sensor_ceil(self, range, water)
 	local pos = vec_raise(self.object:get_pos(), self.height)
 	local pos2 = vec_raise(pos, range)
 	local _, dist, node = fast_ray_sight(pos, pos2, water or false)
 	return dist, node
 end
 
-function modding.get_nearby_player(self, range)
+function mobforge.get_nearby_player(self, range)
 	local pos = self.object:get_pos()
 	if not pos then return end
 	local stored = self._nearby_obj or {}
 	local objects = (#stored > 0 and stored) or self:store_nearby_objects(range)
 	for _, object in ipairs(objects) do
 		if object:is_player()
-		and modding.is_alive(object) then
+		and mobforge.is_alive(object) then
 			return object
 		end
 	end
 end
 
-function modding.get_nearby_players(self, range)
+function mobforge.get_nearby_players(self, range)
 	local pos = self.object:get_pos()
 	if not pos then return end
 	local stored = self._nearby_obj or {}
@@ -291,20 +291,20 @@ function modding.get_nearby_players(self, range)
 	local nearby = {}
 	for _, object in ipairs(objects) do
 		if object:is_player()
-		and modding.is_alive(object) then
+		and mobforge.is_alive(object) then
 			table.insert(nearby, object)
 		end
 	end
 	return nearby
 end
 
-function modding.get_nearby_object(self, name, range)
+function mobforge.get_nearby_object(self, name, range)
 	local pos = self.object:get_pos()
 	if not pos then return end
 	local stored = self._nearby_obj or {}
 	local objects = (#stored > 0 and stored) or self:store_nearby_objects(range)
 	for _, object in ipairs(objects) do
-		local ent = modding.is_alive(object) and object:get_luaentity()
+		local ent = mobforge.is_alive(object) and object:get_luaentity()
 		if ent
 		and object ~= self.object
 		and not ent._ignore
@@ -315,14 +315,14 @@ function modding.get_nearby_object(self, name, range)
 	end
 end
 
-function modding.get_nearby_objects(self, name, range)
+function mobforge.get_nearby_objects(self, name, range)
 	local pos = self.object:get_pos()
 	if not pos then return end
 	local stored = self._nearby_obj or {}
 	local objects = (#stored > 0 and stored) or self:store_nearby_objects(range)
 	local nearby = {}
 	for _, object in ipairs(objects) do
-		local ent = modding.is_alive(object) and object:get_luaentity()
+		local ent = mobforge.is_alive(object) and object:get_luaentity()
 		if ent
 		and object ~= self.object
 		and not ent._ignore
@@ -334,14 +334,14 @@ function modding.get_nearby_objects(self, name, range)
 	return nearby
 end
 
-modding.get_nearby_entity = modding.get_nearby_object
-modding.get_nearby_entities = modding.get_nearby_objects
+mobforge.get_nearby_entity = mobforge.get_nearby_object
+mobforge.get_nearby_entities = mobforge.get_nearby_objects
 
 --------------------
 -- Global Mob API --
 --------------------
 
-function modding.default_water_physics(self)
+function mobforge.default_water_physics(self)
 	local pos = self.stand_pos
 	local stand_node = self.stand_node
 	if not pos or not stand_node then return end
@@ -393,7 +393,7 @@ function modding.default_water_physics(self)
 	end
 end
 
-function modding.default_vitals(self)
+function mobforge.default_vitals(self)
 	local pos = self.stand_pos
 	local node = self.stand_node
 	if not pos or node then return end
@@ -423,13 +423,13 @@ function modding.default_vitals(self)
 
 	-- Environment Damage
 	if self:timer(1) then
-		local stand_def = modding.get_node_def(node.name)
+		local stand_def = mobforge.get_node_def(node.name)
 		local max_breath = self.max_breath or 0
 
 		-- Suffocation
 		if max_breath > 0 then
 			local head_pos = {x = pos.x, y = pos.y + self.height, z = pos.z}
-			local head_def = modding.get_node_def(head_pos)
+			local head_def = mobforge.get_node_def(head_pos)
 			if head_def.groups
 			and (minetest.get_item_group(head_def.name, "water") > 0
 			or (head_def.walkable
@@ -474,7 +474,7 @@ function modding.default_vitals(self)
 	end
 end
 
-function modding.drop_items(self)
+function mobforge.drop_items(self)
 	if not self.drops then return end
 	local pos = self.object:get_pos()
 	if not pos then return end
@@ -508,7 +508,7 @@ function modding.drop_items(self)
 	end
 end
 
-function modding.basic_punch_func(self, puncher, tflp, tool_caps, dir)
+function mobforge.basic_punch_func(self, puncher, tflp, tool_caps, dir)
 	if not puncher then return end
 	local tool
 	local tool_name = ""
@@ -551,7 +551,7 @@ function modding.basic_punch_func(self, puncher, tflp, tool_caps, dir)
 	self:indicate_damage()
 end
 
-local path = minetest.get_modpath("modding")
+local path = minetest.get_modpath("mobforge")
 
 dofile(path.."/mob_meta.lua")
 
@@ -634,7 +634,7 @@ function toggle_mob_behavior(self, player)
 end
 
 
-function modding.mob_follow(self, player)
+function mobforge.mob_follow(self, player)
     local pos = player:get_pos()
     local mob_pos = self.object:get_pos()
     local distance = get_distance(mob_pos, pos)
@@ -655,11 +655,11 @@ function modding.mob_follow(self, player)
     end
 end
 
-function modding.mob_stay(self)
+function mobforge.mob_stay(self)
     self.object:set_velocity({x=0, y=0, z=0})
 end
 
-function modding.mob_wander(self, dtime)
+function mobforge.mob_wander(self, dtime)
     self.wander_timer = self.wander_timer + dtime
     if self.wander_timer > 10 or not self.wander_target then
         self.wander_timer = 0

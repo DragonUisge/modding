@@ -2,15 +2,15 @@
 -- Pathfinding --
 -----------------
 
-local a_star_alloted_time = tonumber(minetest.settings:get("modding_a_star_alloted_time")) or 500
-local theta_star_alloted_time = tonumber(minetest.settings:get("modding_theta_star_alloted_time")) or 700
+local a_star_alloted_time = tonumber(minetest.settings:get("mobforge_a_star_alloted_time")) or 500
+local theta_star_alloted_time = tonumber(minetest.settings:get("mobforge_theta_star_alloted_time")) or 700
 
 local floor = math.floor
 local abs = math.abs
 
 local vec_dist, vec_round = vector.distance, vector.round
 
-local moveable = modding.is_pos_moveable
+local moveable = mobforge.is_pos_moveable
 
 local function get_distance(start_pos, end_pos)
 	local distX = abs(start_pos.x - end_pos.x)
@@ -41,7 +41,7 @@ local function is_on_ground(pos)
 		y = pos.y - 1,
 		z = pos.z
 	}
-	if modding.get_node_def(ground).walkable then
+	if mobforge.get_node_def(ground).walkable then
 		return true
 	end
 	return false
@@ -75,7 +75,7 @@ local function get_line_of_sight(a, b)
 	else
 		for i = 1, #line do
 			local node = minetest.get_node(line[i])
-			if modding.get_node_def(node.name).walkable then
+			if mobforge.get_node_def(node.name).walkable then
 				return false
 			end
 		end
@@ -88,7 +88,7 @@ end
 --[[local function debugpart(pos, time, tex)
 	minetest.add_particle({
 		pos = pos,
-		texture = tex or "modding_particle_blue.png",
+		texture = tex or "mobforge_particle_blue.png",
 		expirationtime = time or 0.1,
 		glow = 6,
 		size = 12
@@ -117,7 +117,7 @@ local function is_pos_moveable_vm(pos, width, height, area, data)
 		local c = data[vi]
 		if c ~= c_air then
 			local c_name = minetest.get_name_from_content_id(c)
-			if modding.get_node_def(c_name).walkable then
+			if mobforge.get_node_def(c_name).walkable then
 				return false
 			end
 		end
@@ -129,7 +129,7 @@ end
 
 local vm_buffer = {}
 
-function modding.find_lvm_path(self, start, goal, obj_width, obj_height, max_open, climb, fly, swim)
+function mobforge.find_lvm_path(self, start, goal, obj_width, obj_height, max_open, climb, fly, swim)
 	climb = climb or false
 	fly = fly or false
 	swim = swim or false
@@ -186,7 +186,7 @@ function modding.find_lvm_path(self, start, goal, obj_width, obj_height, max_ope
 						can_move = is_pos_moveable_vm(vec_round(step), width, height, vm_area, vm_data)
 						neighbor = vec_round(step)
 					else
-						local step = modding.get_ground_level(vector.new(neighbor), 1)
+						local step = mobforge.get_ground_level(vector.new(neighbor), 1)
 						if step.y < neighbor.y
 						and is_pos_moveable_vm(vec_round(step), width, height, vm_area, vm_data) then
 							neighbor = step
@@ -199,7 +199,7 @@ function modding.find_lvm_path(self, start, goal, obj_width, obj_height, max_ope
 			end
 			if can_move
 			and (not swim
-			or modding.get_node_def(neighbor).drawtype == "liquid") then
+			or mobforge.get_node_def(neighbor).drawtype == "liquid") then
 				table.insert(result, neighbor)
 			end
 		end
@@ -369,7 +369,7 @@ function modding.find_lvm_path(self, start, goal, obj_width, obj_height, max_ope
 	return find_path(start, goal)
 end
 
-function modding.find_path(self, start, goal, obj_width, obj_height, max_open, climb, fly, swim)
+function mobforge.find_path(self, start, goal, obj_width, obj_height, max_open, climb, fly, swim)
 	climb = climb or false
 	fly = fly or false
 	swim = swim or false
@@ -424,7 +424,7 @@ function modding.find_path(self, start, goal, obj_width, obj_height, max_open, c
 						can_move = moveable(vec_round(step), width, height)
 						neighbor = vec_round(step)
 					else
-						local step = modding.get_ground_level(vector.new(neighbor), 1)
+						local step = mobforge.get_ground_level(vector.new(neighbor), 1)
 						if step.y < neighbor.y
 						and moveable(vec_round(step), width, height) then
 							neighbor = step
@@ -437,7 +437,7 @@ function modding.find_path(self, start, goal, obj_width, obj_height, max_open, c
 			end
 			if can_move
 			and (not swim
-			or modding.get_node_def(neighbor).drawtype == "liquid") then
+			or mobforge.get_node_def(neighbor).drawtype == "liquid") then
 				table.insert(result, neighbor)
 			end
 		end
@@ -577,7 +577,7 @@ end
 -- Theta* --
 ------------
 
-function modding.find_theta_path(self, start, goal, obj_width, obj_height, max_open, climb, fly, swim)
+function mobforge.find_theta_path(self, start, goal, obj_width, obj_height, max_open, climb, fly, swim)
 	climb = climb or false
 	fly = fly or false
 	swim = swim or false
@@ -618,7 +618,7 @@ function modding.find_theta_path(self, start, goal, obj_width, obj_height, max_o
 			if neighbor.y == pos.y
 			and not fly
 			and not swim then
-				neighbor = modding.get_ground_level(neighbor, 1)
+				neighbor = mobforge.get_ground_level(neighbor, 1)
 			end
 			local can_move = get_line_of_sight({x = pos.x, y = neighbor.y, z = pos.z}, neighbor)
 			if swim then
@@ -646,7 +646,7 @@ function modding.find_theta_path(self, start, goal, obj_width, obj_height, max_o
 			and neighbor.z == pos.z
 			and climb))
 			and (not swim
-			or modding.get_node_def(neighbor).drawtype == "liquid") then
+			or mobforge.get_node_def(neighbor).drawtype == "liquid") then
 				table.insert(result, neighbor)
 			end
 		end

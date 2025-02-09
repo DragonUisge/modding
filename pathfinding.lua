@@ -2,10 +2,10 @@
 -- Pathfinding --
 -----------------
 
-local a_star_alloted_time = tonumber(minetest.settings:get("modding_a_star_alloted_time")) or 500
-local theta_star_alloted_time = tonumber(minetest.settings:get("modding_theta_star_alloted_time")) or 700
+local a_star_alloted_time = tonumber(minetest.settings:get("mobforge_a_star_alloted_time")) or 500
+local theta_star_alloted_time = tonumber(minetest.settings:get("mobforge_theta_star_alloted_time")) or 700
 
-modding.pathfinder = {}
+mobforge.pathfinder = {}
 
 local max_open = 300
 
@@ -47,7 +47,7 @@ end
 
 -- Blocked Movement Checks
 
-local is_blocked = modding.is_blocked
+local is_blocked = mobforge.is_blocked
 
 local function get_line_of_sight(a, b)
 	local steps = floor(vec_dist(a, b))
@@ -73,7 +73,7 @@ local function get_line_of_sight(a, b)
 	else
 		for i = 1, #line do
 			local node = minetest.get_node(line[i])
-			if modding.get_node_def(node.name).walkable then
+			if mobforge.get_node_def(node.name).walkable then
 				return false
 			end
 		end
@@ -87,7 +87,7 @@ local function is_on_ground(pos)
 		y = pos.y - 1,
 		z = pos.z
 	}
-	if modding.get_node_def(ground).walkable then
+	if mobforge.get_node_def(ground).walkable then
 		return true
 	end
 	return false
@@ -162,7 +162,7 @@ local function get_neighbors(pos, width, height, open, closed, parent, evaluated
 				can_move = not is_blocked(vec_round(step), width, height)
 				neighbor = vec_round(step)
 			else
-				step = modding.get_ground_level(vec_new(neighbor), 1)
+				step = mobforge.get_ground_level(vec_new(neighbor), 1)
 				if step.y < neighbor.y
 				and not is_blocked(vec_round(step), width, height) then
 					neighbor = step
@@ -179,7 +179,7 @@ local function get_neighbors(pos, width, height, open, closed, parent, evaluated
 	return result
 end
 
-function modding.pathfinder.get_neighbors_climb(pos, width, height, open, closed)
+function mobforge.pathfinder.get_neighbors_climb(pos, width, height, open, closed)
 	local result = {}
 	local neighbor
 	local can_move
@@ -202,7 +202,7 @@ function modding.pathfinder.get_neighbors_climb(pos, width, height, open, closed
 				can_move = not is_blocked(vec_round(step), width, height)
 				neighbor = vec_round(step)
 			elseif i < 9 then
-				step = modding.get_ground_level(vec_new(neighbor), 1)
+				step = mobforge.get_ground_level(vec_new(neighbor), 1)
 				if step.y < neighbor.y
 				and not is_blocked(vec_round(step), width, height) then
 					neighbor = step
@@ -217,7 +217,7 @@ function modding.pathfinder.get_neighbors_climb(pos, width, height, open, closed
 	return result
 end
 
-function modding.pathfinder.get_neighbors_fly(pos, width, height, open, closed, parent)
+function mobforge.pathfinder.get_neighbors_fly(pos, width, height, open, closed, parent)
 	local result = {}
 	local neighbor
 	local can_move
@@ -247,7 +247,7 @@ function modding.pathfinder.get_neighbors_fly(pos, width, height, open, closed, 
 	return result, true
 end
 
-function modding.pathfinder.get_neighbors_swim(pos, width, height, open, closed, parent)
+function mobforge.pathfinder.get_neighbors_swim(pos, width, height, open, closed, parent)
 	local result = {}
 	local neighbor
 	local can_move
@@ -260,7 +260,7 @@ function modding.pathfinder.get_neighbors_swim(pos, width, height, open, closed,
 
 		if (parent
 		and vec_dist(parent, neighbor) < vec_dist(pos, neighbor))
-		or modding.get_node_def(neighbor).drawtype ~= "liquid" then
+		or mobforge.get_node_def(neighbor).drawtype ~= "liquid" then
 			can_move = false
 		end
 
@@ -280,7 +280,7 @@ end
 
 -- A*
 
-function modding.pathfinder.find_path(self, pos1, pos2, neighbor_func)
+function mobforge.pathfinder.find_path(self, pos1, pos2, neighbor_func)
 	local us_time = minetest.get_us_time()
 	local check_vertical = false
 	neighbor_func = neighbor_func or get_neighbors
@@ -443,7 +443,7 @@ end
 
 -- Theta*
 
-function modding.pathfinder.find_path_theta(self, pos1, pos2, neighbor_func)
+function mobforge.pathfinder.find_path_theta(self, pos1, pos2, neighbor_func)
 	local us_time = minetest.get_us_time()
 	local check_vertical = false
 	neighbor_func = neighbor_func or get_neighbors
