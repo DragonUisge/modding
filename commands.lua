@@ -94,32 +94,6 @@ minetest.register_chatcommand("list-mobs", {
     end,
 })
 
--- Last Login Command
-minetest.register_chatcommand("last-login", {
-    params = "<playername>",
-    description = "Show the last login time of a player",
-    func = function(name, param)
-        if param == "" then
-            return false, "Please provide a player name"
-        end
-
-        local auth_handler = minetest.get_auth_handler()
-        local entry = auth_handler.get_auth(param)
-        if not entry then
-            return false, "Player not found"
-        end
-
-        if entry.last_login then
-            return true, param .. " last logged in on: " .. os.date("%Y-%m-%d %H:%M:%S", entry.last_login)
-        else
-            return true, param .. " has never logged in"
-        end
-    end,
-})
-
-
-
-
 -- Helper function to determine if an entity is a mob and its tamed status
 function is_mob_and_tamed(entity)
     if entity.object and entity.name then
